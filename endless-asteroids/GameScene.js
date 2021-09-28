@@ -4,12 +4,12 @@ class GameScene extends Phaser.Scene {
 	}
 
 	preload() {
-		this.load.image('alien', 'https://labs.phaser.io/assets/sprites/space-baddie.png');
-    this.load.image('alien2', 'https://labs.phaser.io/assets/sprites/space-baddie-purple.png');
-    this.load.image('ship', 'https://labs.phaser.io/assets/sprites/xenon2_ship.png');
-    this.load.image('ground', 'https://labs.phaser.io/assets/sprites/platform.png');
-    this.load.image('bullet', 'https://labs.phaser.io/assets/sprites/bullet.png');
-    this.load.image('star', 'https://labs.phaser.io/assets/sprites/16x16.png');
+		this.load.image('alien', './assets/sprites/asteroid1.png');
+    this.load.image('alien2', './assets/sprites/asteroid2.png');
+		this.load.image('alien3', './assets/sprites/asteroid3.png')
+    this.load.image('ship', './assets/sprites/spaceship.png');
+    this.load.image('bullet', './assets/sprites/star.png');
+    this.load.image('star', './assets/sprites/star.png');
 	}
 
 	create() {
@@ -30,16 +30,8 @@ class GameScene extends Phaser.Scene {
 		gameState.scoreText = this.add.text(centerX, fullY-20, 'Score: 0', { fontSize: '20px', fill: '#FFFFFF' }).setOrigin(0.5);
 
     // player
-    gameState.player = this.physics.add.sprite(centerX, fullY-50, 'ship').setScale(1);
+    gameState.player = this.physics.add.sprite(centerX, fullY-50, 'ship').setScale(0.2);
     gameState.player.setCollideWorldBounds(true);
-
-    // platform below screen to clear items as they pass
-    gameState.bounds = this.physics.add.staticGroup();
-    gameState.bounds.create(0, fullY+100, 'ground').setScale(2).refreshBody();
-
-    // platform above screen to clear items as they pass
-    gameState.bounds = this.physics.add.staticGroup();
-    gameState.bounds.create(0, -300, 'ground').setScale(2).refreshBody();
 
     // other groups
     gameState.bullets = this.physics.add.group();
@@ -49,10 +41,19 @@ class GameScene extends Phaser.Scene {
 
     // generator function
 		const generatealien = () => {
-      const randomSprite = ['alien', 'alien2'][Math.floor(Math.random() * 2)];
+      const randomSprite = ['alien', 'alien2', 'alien3'][Math.floor(Math.random() * 3)];
 			const xCoord = Math.random() * fullX;
       const alienSpeed = Math.random() * 150 + 100;
-		  gameState.aliens.create(xCoord, -50, randomSprite).setVelocityY(alienSpeed * gameState.gameSpeed).setScale(Math.random() * 2 + 2);
+		  gameState.aliens.create(xCoord, -50, randomSprite).setVelocityY(alienSpeed * gameState.gameSpeed).setScale(Math.random() * 0.3 + .3 );
+		}
+
+		const generatealienHere = (x, y, xVelocity, scale2) => {
+      const randomSprite = ['alien', 'alien2', 'alien3'][Math.floor(Math.random() * 3)];
+      const alienSpeed = Math.random() * 150 + 100;
+		  gameState.aliens.create(x, y, randomSprite)
+				.setVelocityY(alienSpeed * gameState.gameSpeed)
+				.setVelocityX(xVelocity)
+				.setScale(scale2/2);
 		}
 
     const generateStar = () => {
@@ -85,26 +86,21 @@ class GameScene extends Phaser.Scene {
     }
 
     // collisions
-    this.physics.add.collider(gameState.aliens, gameState.bounds, alien => {
-      alien.destroy();
-      gameState.score += 1;
-      gameState.scoreText.setText(`Score: ${gameState.score}`)
-    });
-
-    this.physics.add.collider(gameState.bullets, gameState.bounds, bullet => {
-      bullet.destroy();
-    });
-
     this.physics.add.collider(gameState.stars, gameState.bounds, star => {
       star.destroy();
       gameState.score += 1;
       gameState.scoreText.setText(`Score: ${gameState.score}`)
     });
 
-    this.physics.add.collider(gameState.aliens, gameState.bullets, alien => {
+    this.physics.add.collider(gameState.aliens, gameState.bullets, (alien, bullet) => {
       alien.destroy();
+			bullet.destroy();
       gameState.score += 5;
-      gameState.scoreText.setText(`Score: ${gameState.score}`)
+      gameState.scoreText.setText(`Score: ${gameState.score}`);
+			if (alien._scaleX > 0.3) {
+				generatealienHere(alien.x, alien.y, Math.random() * 70, alien._scaleX);
+				generatealienHere(alien.x, alien.y, Math.random() * -70, alien._scaleX);
+			}
     });
 
 		this.physics.add.collider(gameState.player, gameState.aliens, () => {
@@ -116,6 +112,7 @@ class GameScene extends Phaser.Scene {
 				this.scene.restart();
 			});
 		});
+
 	}
 
 	update() {
@@ -126,6 +123,8 @@ class GameScene extends Phaser.Scene {
     // move velocity slowly to 0 (delay for drift feeling)
     const xVelocity = gameState.player.body.velocity.x;
     const yVelocity = gameState.player.body.velocity.y;
+
+		gameState.player.setAngle(xVelocity/20);
 
 		if (gameState.cursors.left.isDown) {
 			gameState.player.setVelocityX(xVelocity - 20);
@@ -151,7 +150,10 @@ class GameScene extends Phaser.Scene {
     // shooting on space
     if (gameState.cursors.space.isDown) {
       if (gameState.shootRecharge <= 0) {
-        gameState.bullets.create(gameState.player.x, gameState.player.y, 'bullet').setVelocityY(-500);
+        gameState.bullets
+					.create(gameState.player.x, gameState.player.y, 'bullet')
+					.setVelocityY(-500)
+					.setVelocityX(xVelocity);
         gameState.shootRecharge += 20;
       }
     }
