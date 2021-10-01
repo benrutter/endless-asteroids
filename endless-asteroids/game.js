@@ -1,12 +1,19 @@
 const gameState = {
-
+	powerUps: {
+		chargeRate: 1,
+		traction: 2,
+		acceleration: 20,
+	}
 };
 
 const config = {
 	type: Phaser.AUTO,
-	width: 500,
-	height: 700,
+	width: window.innerWidth * window.devicePixelRatio * 0.9,
+	height: window.innerHeight * window.devicePixelRatio * 0.9,
 	backgroundColor: "00000",
+	input: {
+		gamepad: true,
+	},
 	physics: {
 		default: 'arcade',
 		arcade: {

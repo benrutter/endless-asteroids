@@ -5,7 +5,8 @@ class StartScene extends Phaser.Scene {
 	}
 
   preload() {
-    this.load.image('star', 'https://labs.phaser.io/assets/sprites/16x16.png')
+
+    this.load.image('star', './assets/sprites/star.png');
   }
 
 	create() {
@@ -22,19 +23,21 @@ class StartScene extends Phaser.Scene {
     const generateStar = () => {
       const xCoord = Math.random() * fullX;
       const speed = Math.random() * 200;
-      stars.create(xCoord, -50, 'star').setVelocityY(speed).setScale(speed/500);
+      stars.create(xCoord, -50, 'star').setVelocityY(speed).setScale(speed/250);
     }
 
     const generateStarLoop = this.time.addEvent({
-      delay: 200,
+      delay: 100,
       callback: generateStar,
       callbackScope: this,
       loop: true,
     })
 
     // intro text
-		this.add.text(centerX, centerY - 50, 'Endless Asteroids', {fill: '#FFFFFF', fontSize: '40px'}).setOrigin(0.5);
-    this.add.text(centerX, centerY + 50, 'Click to start', {fill: '#FFFFFF', fontSize: '20px'}).setOrigin(0.5);
+		this.add.text(centerX, centerY - 100, ' Endless\nAsteroids', {fill: '#FFFFFF', fontSize: '80px'}).setOrigin(0.5);
+		this.add.text(centerX, centerY + 50, 'Spacebar to shoot', {fill: '#FFFFFF', fontSize: '40px'}).setOrigin(0.5);
+		this.add.text(centerX, centerY + 100, 'Arrow keys to move', {fill: '#FFFFFF', fontSize: '40px'}).setOrigin(0.5);
+    this.add.text(centerX, centerY + 150, 'Click to start', {fill: '#FFFFFF', fontSize: '40px'}).setOrigin(0.5);
 
     // click to start
     this.input.on('pointerdown', () => {
