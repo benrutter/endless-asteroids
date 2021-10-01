@@ -98,7 +98,11 @@ class GameScene extends Phaser.Scene {
     // collisions
     this.physics.add.collider(gameState.stars, gameState.bounds, star => {
       star.destroy();
-      gameState.score += 1;
+    });
+
+		this.physics.add.collider(gameState.aliens, gameState.bounds, star => {
+      star.destroy();
+			gameState.score += 1;
       gameState.scoreText.setText(`Score: ${gameState.score}`)
     });
 
